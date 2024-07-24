@@ -12,4 +12,13 @@ AuthMap dynamically builds a PowerShell script that is launched on remote comput
 After all outputs are collected, AuthMap merges individual device results into a single aggregated CSV of data for easy analysis.
 
 ### How do I use it?
+Download authmap.ps1 and launch using one or more of the following parameters:
+```
+-targetusername - Specify the name to use for Event Log Filtering. Default is any user.
+-daysback - How many days backwards to filter Event Logs from the current system time on each host Default is 7.
+-logontypes - Specify logon types to filter on in a comma-delimited string like '3,5,10' Default is any type.
 
+
+.\authmap.ps1 -targetusername 'admin' -daysback 30 -> Pull 30 days worth of login activity for user 'admin' across all Logon Types
+.\authmap.ps1 -daysback 7 -logontypes 10 -> Pull 7 days worth of type 10 activity across the environment
+```

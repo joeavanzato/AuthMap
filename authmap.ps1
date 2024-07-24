@@ -41,6 +41,7 @@ $milliseconds = $daysback * 86400000
 $settings = [hashtable]::Synchronized(@{})
 $settings.hostcount = 0
 $settings.reachabledevices = [System.Collections.ArrayList]@()
+$settings.launchedjobs = 0
 
 # Get the credentials we should run as - this should be Domain Admin or similar high-priveleged role that can launch remote processes via WMI and access C$ on remote devices via SMB
 $credentials = Get-Credential
@@ -170,9 +171,9 @@ function WriteLogo {
 *********************************************
     "
     Write-Host $logo
-
-
-
+    Write-Host "AuthMap - Joe Avanzato"
+    Write-Host "https://github.com/joeavanzato/AuthMap"
+    Write-Host ""
 }
 
 function Main {
@@ -277,6 +278,7 @@ function Main {
     } else {
         Invoke-WmiMethod -ComputerName `$computer -Credential `$credentials -Class Win32_Process -Name Create -ArgumentList '$executionstring'
     }
+    `$settings.launchedjobs += 1
     "
     $ScriptBlock = [ScriptBlock]::Create($poolblock)
     $SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
@@ -332,12 +334,11 @@ function Main {
     } #| Receive-Job -Wait -AutoRemoveJob
 
     while ($Jobs.Runspace.IsCompleted -contains $false) {
-        Log "Waiting"
+        Log "Waiting for WMI Jobs to finish launching...[$($settings.launchedjobs) / $($settings.reachabledevices.Count)]"
         Start-Sleep -Milliseconds 1000
     }
-
-    Log "Started all remote jobs - waiting for outputs!"
     $totalreachable = $settings.reachabledevices.Count
+    Log "Started all remote tasks - waiting for outputs - Total Started: $totalreachable"
     $done = 0
     $copyJobs = New-Object System.Collections.ArrayList
     while ($true){
@@ -346,7 +347,7 @@ function Main {
             Log "Done Reading Remote Files - waiting for all copy jobs to finish..."
             break
         }
-        Log "Checking for new results..."
+        Log "Checking for new results - Current Progress: [$done / $totalreachable]"
         foreach ($i in $settings.reachabledevices.Clone()){
             # Check and see if output file exists yet - if it does, copy to local device folder with appropriate name
             $source_file = "\\$i\C`$\$($split[1].Trim())"
