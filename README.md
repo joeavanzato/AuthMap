@@ -22,3 +22,12 @@ Download authmap.ps1 and launch using one or more of the following parameters:
 .\authmap.ps1 -targetusername 'admin' -daysback 30 -> Pull 30 days worth of login activity for user 'admin' across all Logon Types
 .\authmap.ps1 -daysback 7 -logontypes 10 -> Pull 7 days worth of type 10 activity across the environment
 ```
+
+### Expected Outcomes
+AuthMap will pull back an individual CSV from each target device and ultimately merge these together into a single output file.  
+
+Since AuthMap relies on 4624 events, the columns of the CSV consist of the critical data extracted from these events - an example of the final output is shown below:
+
+<p align="center">
+<img src="images/example1.png">
+</p>
